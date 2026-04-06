@@ -16,16 +16,28 @@ const posts = (await getCollection("posts")).sort(
     {
       posts.map((post) => (
         <li class="post-item">
-          <span class="post-date">
-            {new Date(post.data.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
+          <div class="post-meta-line">
+            <span>{post.data.author}</span>
+            <span class="dot">&middot;</span>
+            <span>
+              {new Date(post.data.date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+              })}
+            </span>
+            {post.data.category && (
+              <>
+                <span class="dot">&middot;</span>
+                <span>{post.data.category}</span>
+              </>
+            )}
+          </div>
           <a href={`/posts/${post.id}`}>
             <div class="post-title">{post.data.title}</div>
           </a>
+          {post.data.subtitle && (
+            <div class="post-subtitle-preview">{post.data.subtitle}</div>
+          )}
         </li>
       ))
     }

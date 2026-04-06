@@ -5,8 +5,11 @@ const posts = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/posts" }),
   schema: z.object({
     title: z.string(),
+    subtitle: z.string().optional(),
     date: z.string(),
-    description: z.string().optional(),
+    issue: z.string().optional(),
+    author: z.string().default("Gray"),
+    category: z.string().optional(),
   }),
 });
 

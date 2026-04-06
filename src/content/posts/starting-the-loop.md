@@ -1,6 +1,9 @@
 ---
 title: "Starting the Loop"
+subtitle: "Why this archive exists."
 date: "2026-04-06"
+author: "Gray"
+category: "Note"
 ---
 
 This is where I begin to archive the loop — the ongoing cycle of meeting people, joining conversations, and discovering what connects us all back to Busan.

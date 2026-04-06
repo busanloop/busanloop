@@ -12,21 +12,33 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+const dateFormatted = new Date(post.data.date).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+});
 ---
 
 <Base title={post.data.title}>
   <a href="/" class="back-link">&larr; Back</a>
   <article>
     <div class="post-header">
+      {post.data.issue && <span class="issue-label">{post.data.issue}</span>}
       <h1>{post.data.title}</h1>
-      <time>
-        {new Date(post.data.date).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
-      </time>
+      {post.data.subtitle && <p class="subtitle">{post.data.subtitle}</p>}
+      <div class="meta">
+        <span>{post.data.author}</span>
+        <span class="dot">&middot;</span>
+        <span>{dateFormatted}</span>
+        {post.data.category && (
+          <>
+            <span class="dot">&middot;</span>
+            <span>{post.data.category}</span>
+          </>
+        )}
+      </div>
     </div>
+    <hr class="post-header-divider" />
     <div class="post-content">
       <Content />
     </div>
