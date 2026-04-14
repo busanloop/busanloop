@@ -179,6 +179,7 @@
 
       // Translate
       async function translate() {
+        try {
         const aiKey = getAiKey();
         if (!aiKey) { document.querySelector(".settings").open = true; return alert("Please set your Anthropic API Key in Settings."); }
 
@@ -187,7 +188,7 @@
 
         const btn = document.getElementById("btnTranslate");
         btn.disabled = true;
-        showStatus("translateStatus", '<span class="spinner"></span> Translating...', "");
+        showStatus("translateStatus", '<span class="spinner"></span> Translating... please wait.', "");
 
         const today = new Date().toISOString().split("T")[0];
 
@@ -249,6 +250,9 @@ ${text}`
           showStatus("translateStatus", "Error: " + e.message, "error");
         } finally {
           btn.disabled = false;
+        }
+        } catch (outerErr) {
+          alert("Error: " + outerErr.message);
         }
       }
 
