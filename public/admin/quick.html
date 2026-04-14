@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>busanloop — Quick Publish</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: #1a1a1a;
+        color: #d4d4d4;
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      .container { max-width: 640px; margin: 0 auto; padding: 2rem 1.2rem; }
+      h1 { font-size: 1.1rem; font-weight: 600; color: #f0f0f0; margin-bottom: 0.3rem; }
+      .subtitle { font-size: 0.8rem; color: #666; margin-bottom: 2rem; }
+      label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 0.3rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+      textarea, input[type="text"], input[type="password"] {
+        width: 100%; background: #252525; border: 1px solid #333; color: #d4d4d4;
+        border-radius: 6px; padding: 0.7rem; font-size: 0.9rem; font-family: inherit;
+        outline: none; transition: border-color 0.2s;
+      }
+      textarea:focus, input:focus { border-color: #4a7aa8; }
+      textarea { resize: vertical; }
+      .field { margin-bottom: 1rem; }
+      .row { display: flex; gap: 0.8rem; }
+      .row .field { flex: 1; }
+      button {
+        background: #4a7aa8; color: #fff; border: none; border-radius: 6px;
+        padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;
+        width: 100%; transition: opacity 0.2s;
+      }
+      button:hover { opacity: 0.85; }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .btn-secondary { background: #333; }
+      .btn-row { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+      .btn-row button { flex: 1; }
+      .settings { margin-bottom: 2rem; }
+      .settings summary {
+        font-size: 0.8rem; color: #666; cursor: pointer; padding: 0.5rem 0;
+      }
+      .settings-inner { padding: 0.8rem 0; display: flex; flex-direction: column; gap: 0.8rem; }
+      .status {
+        text-align: center; padding: 1rem; border-radius: 6px; margin-top: 1rem;
+        font-size: 0.85rem;
+      }
+      .status.error { background: #3a2020; color: #e88; }
+      .status.success { background: #1e3a1e; color: #8e8; }
+      .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #666; border-top-color: #4a7aa8; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.5rem; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .hidden { display: none; }
+      .back-link { font-size: 0.8rem; color: #666; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
+      .back-link:hover { color: #aaa; }
+      .preview-field { background: #222; border-radius: 6px; padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-size: 0.85rem; }
+      .preview-label { font-size: 0.65rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/admin/" class="back-link">&larr; Admin</a>
+      <h1>Quick Publish</h1>
+      <p class="subtitle">Write in Korean, publish in English.</p>
+
+      <details class="settings">
+        <summary>Settings</summary>
+        <div class="settings-inner">
+          <div class="field">
+            <label>Anthropic API Key</label>
+            <input type="password" id="aiKey" placeholder="sk-ant-..." />
+          </div>
+          <div class="field">
+            <label>GitHub Personal Access Token</label>
+            <input type="password" id="ghPat" placeholder="ghp_..." />
+          </div>
+          <button class="btn-secondary" onclick="saveSettings()">Save</button>
+        </div>
+      </details>
+
+      <!-- State 1: Input -->
+      <div id="stateInput">
+        <div class="field">
+          <label>Korean Text</label>
+          <textarea id="koreanText" rows="14" placeholder="한글로 블로그 포스트를 작성하세요..."></textarea>
+        </div>
+        <button id="btnTranslate" onclick="translate()">Translate & Preview</button>
+        <div id="translateStatus" class="hidden"></div>
+      </div>
+
+      <!-- State 2: Preview -->
+      <div id="statePreview" class="hidden">
+        <div class="field">
+          <label>Title</label>
+          <input type="text" id="pTitle" />
+        </div>
+        <div class="field">
+          <label>Subtitle</label>
+          <input type="text" id="pSubtitle" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Date</label>
+            <input type="text" id="pDate" />
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <input type="text" id="pCategory" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Issue</label>
+            <input type="text" id="pIssue" />
+          </div>
+          <div class="field">
+            <label>Author</label>
+            <input type="text" id="pAuthor" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Body (Markdown)</label>
+          <textarea id="pBody" rows="16"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="backToInput()">Back</button>
+          <button id="btnPublish" onclick="publish()">Publish</button>
+        </div>
+        <div id="publishStatus" class="hidden"></div>
+      </div>
+
+      <!-- State 3: Done -->
+      <div id="stateDone" class="hidden">
+        <div class="status success" id="doneMessage"></div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button onclick="reset()">Write Another</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const REPO = "busanloop/busanloop";
+      const BRANCH = "master";
+      const POST_PATH = "src/content/posts";
+
+      // Settings
+      function loadSettings() {
+        document.getElementById("aiKey").value = localStorage.getItem("bl_ai_key") || "";
+        document.getElementById("ghPat").value = localStorage.getItem("bl_github_pat") || "";
+      }
+      function saveSettings() {
+        localStorage.setItem("bl_ai_key", document.getElementById("aiKey").value.trim());
+        localStorage.setItem("bl_github_pat", document.getElementById("ghPat").value.trim());
+        alert("Saved!");
+      }
+      function getAiKey() { return localStorage.getItem("bl_ai_key") || ""; }
+      function getGhPat() { return localStorage.getItem("bl_github_pat") || ""; }
+
+      // UI state
+      function showState(name) {
+        ["stateInput", "statePreview", "stateDone"].forEach(id => {
+          document.getElementById(id).classList.toggle("hidden", id !== "state" + name);
+        });
+      }
+      function backToInput() { showState("Input"); }
+      function reset() {
+        document.getElementById("koreanText").value = "";
+        showState("Input");
+      }
+      function showStatus(elId, msg, type) {
+        const el = document.getElementById(elId);
+        el.className = "status " + type;
+        el.innerHTML = msg;
+        el.classList.remove("hidden");
+      }
+      function hideStatus(elId) { document.getElementById(elId).classList.add("hidden"); }
+
+      // Translate
+      async function translate() {
+        const aiKey = getAiKey();
+        if (!aiKey) { document.querySelector(".settings").open = true; return alert("Please set your Anthropic API Key in Settings."); }
+
+        const text = document.getElementById("koreanText").value.trim();
+        if (!text) return alert("Please enter Korean text.");
+
+        const btn = document.getElementById("btnTranslate");
+        btn.disabled = true;
+        showStatus("translateStatus", '<span class="spinner"></span> Translating...', "");
+
+        const today = new Date().toISOString().split("T")[0];
+
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": aiKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true",
+            },
+            body: JSON.stringify({
+              model: "claude-haiku-4-5-20241022",
+              max_tokens: 4096,
+              messages: [{
+                role: "user",
+                content: `You are a professional translator and editor for an English-language editorial blog called "busanloop" about Busan, startups, and technology.
+
+Translate the following Korean blog post into polished, publication-ready English. The tone should be thoughtful, direct, and slightly literary — like a quality independent magazine.
+
+Return ONLY a valid JSON object with exactly these keys:
+- "title": compelling article title (string)
+- "subtitle": one-line tagline or hook (string)
+- "date": "${today}" (string, YYYY-MM-DD format)
+- "issue": leave empty string if unsure (string)
+- "author": "Gray" (string)
+- "category": one of Note, Insight, Interview, Essay, Report, Update (string)
+- "body": the full translated article in clean Markdown. Use ## for sections, > for blockquotes, #### for pull quotes, --- for section dividers, **bold** for emphasis. (string)
+
+Do NOT include any text outside the JSON object. Do NOT wrap in markdown code blocks.
+
+Korean text:
+${text}`
+              }]
+            })
+          });
+
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`API error ${res.status}: ${err}`);
+          }
+
+          const data = await res.json();
+          const content = data.content[0].text;
+          const parsed = JSON.parse(content);
+
+          document.getElementById("pTitle").value = parsed.title || "";
+          document.getElementById("pSubtitle").value = parsed.subtitle || "";
+          document.getElementById("pDate").value = parsed.date || today;
+          document.getElementById("pIssue").value = parsed.issue || "";
+          document.getElementById("pAuthor").value = parsed.author || "Gray";
+          document.getElementById("pCategory").value = parsed.category || "";
+          document.getElementById("pBody").value = parsed.body || "";
+
+          hideStatus("translateStatus");
+          showState("Preview");
+        } catch (e) {
+          showStatus("translateStatus", "Error: " + e.message, "error");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // Publish
+      function toSlug(title) {
+        return title.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+      }
+
+      async function publish() {
+        const pat = getGhPat();
+        if (!pat) { document.querySelector(".settings").open = true; return alert("Please set your GitHub PAT in Settings."); }
+
+        const title = document.getElementById("pTitle").value.trim();
+        const subtitle = document.getElementById("pSubtitle").value.trim();
+        const date = document.getElementById("pDate").value.trim();
+        const issue = document.getElementById("pIssue").value.trim();
+        const author = document.getElementById("pAuthor").value.trim() || "Gray";
+        const category = document.getElementById("pCategory").value.trim();
+        const body = document.getElementById("pBody").value.trim();
+
+        if (!title || !body) return alert("Title and body are required.");
+
+        const slug = toSlug(title);
+        const filePath = `${POST_PATH}/${slug}.md`;
+
+        let frontmatter = `---\ntitle: "${title}"\n`;
+        if (subtitle) frontmatter += `subtitle: "${subtitle}"\n`;
+        frontmatter += `date: "${date}"\n`;
+        if (issue) frontmatter += `issue: "${issue}"\n`;
+        frontmatter += `author: "${author}"\n`;
+        if (category) frontmatter += `category: "${category}"\n`;
+        frontmatter += `---\n\n`;
+
+        const fileContent = frontmatter + body + "\n";
+        const encoded = btoa(unescape(encodeURIComponent(fileContent)));
+
+        const btn = document.getElementById("btnPublish");
+        btn.disabled = true;
+        showStatus("publishStatus", '<span class="spinner"></span> Publishing...', "");
+
+        try {
+          // Check if file exists
+          let sha = null;
+          const checkRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}?ref=${BRANCH}`, {
+            headers: { Authorization: `token ${pat}` }
+          });
+          if (checkRes.ok) {
+            const existing = await checkRes.json();
+            sha = existing.sha;
+          }
+
+          // Create or update file
+          const putBody = {
+            message: `add: ${title}`,
+            content: encoded,
+            branch: BRANCH,
+          };
+          if (sha) putBody.sha = sha;
+
+          const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `token ${pat}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(putBody),
+          });
+
+          if (!putRes.ok) {
+            const err = await putRes.text();
+            throw new Error(`GitHub API error ${putRes.status}: ${err}`);
+          }
+
+          const result = await putRes.json();
+          document.getElementById("doneMessage").innerHTML =
+            `Published! <br><br>` +
+            `<a href="https://busanloop.com/posts/${slug}/" style="color:#8e8;">View post &rarr;</a><br>` +
+            `<span style="font-size:0.75rem;color:#666;">Commit: ${result.commit.sha.substring(0, 7)}</span>`;
+          showState("Done");
+        } catch (e) {
+          showStatus("publishStatus", "Error: " + e.message, "error");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // Init
+      loadSettings();
+      if (!getAiKey() || !getGhPat()) {
+        document.querySelector(".settings").open = true;
+      }
+    </script>
+  </body>
+</html>
