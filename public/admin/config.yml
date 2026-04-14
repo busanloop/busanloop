@@ -1,0 +1,23 @@
+backend:
+  name: github
+  repo: busanloop/busanloop
+  branch: main
+
+media_folder: "public/images"
+public_folder: "/images"
+
+collections:
+  - name: "posts"
+    label: "Posts"
+    folder: "src/content/posts"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+      - { label: "Date", name: "date", widget: "string", pattern: ["^\\d{4}-\\d{2}-\\d{2}$", "YYYY-MM-DD 형식으로 입력"] }
+      - { label: "Issue", name: "issue", widget: "string", required: false }
+      - { label: "Author", name: "author", widget: "string", default: "Gray" }
+      - { label: "Category", name: "category", widget: "string", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
