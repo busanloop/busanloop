@@ -1,5 +1,5 @@
 ---
-title: Title Why I’m Flying to Tokyo Today
+title: Why I’m Flying to Tokyo Today
 subtitle: Subtitle Looking for the Quiet Beginning of Japan’s Next Startup Moment
 date: April 26, 2026
 issue: Issue A personal reflection on beginning a five-day trip to Tokyo to explore whether Japan may be entering a new startup era shaped by its own market, culture, and quiet strengths.
